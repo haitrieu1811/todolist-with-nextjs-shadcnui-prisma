@@ -1,7 +1,7 @@
+import { ModeToggle } from "@/components/mode-toggle";
 import TodoItem from "@/components/todo-item";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -9,12 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   return (
     <main className="h-screen w-1/3 mx-auto py-10">
       <h1 className="font-bold text-3xl text-center">Todo list</h1>
+      <div className="flex justify-end">
+        <ModeToggle />
+      </div>
       <Separator className="my-6" />
       <div className="space-y-4">
         <Input type="text" placeholder="Thêm việc cần làm" className="mt-10" />
@@ -34,7 +38,7 @@ export default function Home() {
             </SelectItem>
           </SelectContent>
         </Select>
-        <Button className="bg-blue-600">Thêm</Button>
+        <Button>Thêm</Button>
       </div>
       <Tabs defaultValue="all" className="mt-6">
         <TabsList>
