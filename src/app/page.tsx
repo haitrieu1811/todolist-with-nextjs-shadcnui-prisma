@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   return (
-    <main className="h-screen w-1/3 mx-auto py-10">
+    <main className="h-screen w-1/2 mx-auto py-10">
       <h1 className="font-bold text-3xl text-center">Todo list</h1>
       <div className="flex justify-end">
         <ModeToggle />
@@ -38,7 +38,7 @@ export default function Home() {
             </SelectItem>
           </SelectContent>
         </Select>
-        <Button>Thêm</Button>
+        <Button>Thêm công việc</Button>
       </div>
       <Tabs defaultValue="all" className="mt-6">
         <TabsList>
@@ -47,11 +47,13 @@ export default function Home() {
           <TabsTrigger value="finished">Đã thực hiện</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
-          {Array(20)
-            .fill(0)
-            .map((_, index) => (
-              <TodoItem key={index} />
-            ))}
+          <div className="space-y-4 py-6">
+            {Array(20)
+              .fill(0)
+              .map((_, index) => (
+                <TodoItem key={index} />
+              ))}
+          </div>
         </TabsContent>
         <TabsContent value="unfinished">Chưa thực hiện.</TabsContent>
         <TabsContent value="finished">Đã thực hiện.</TabsContent>
