@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { useToast } from "./ui/use-toast";
 
 const todoBadges = {
   DELIBERATELY: <Badge className="bg-blue-500">Thong thả</Badge>,
@@ -28,6 +29,8 @@ type TodoItemProps = {
 
 const TodoItem = ({ todoData, startEditTodo }: TodoItemProps) => {
   const queryClient = useQueryClient();
+
+  const { toast } = useToast();
 
   const markAsFinishedMutation = useMutation({
     mutationKey: ["mark-as-finished"],
@@ -51,12 +54,30 @@ const TodoItem = ({ todoData, startEditTodo }: TodoItemProps) => {
     },
   });
 
+  const deleteTodoMutation = useMutation({
+    mutationKey: ["delete-todo"],
+    mutationFn: (todoId: string) => axios.delete(`/api/todo/${todoId}`),
+    onSuccess: () => {
+      toast({
+        title: "Xóa công việc thành công",
+        description: "Công việc đã được xóa khỏi danh sách",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get-todos"],
+      });
+    },
+  });
+
   const handleMarkAsFinished = () => {
     markAsFinishedMutation.mutate(todoData.id);
   };
 
   const handleUndoFinished = () => {
     undoFinishedMutation.mutate(todoData.id);
+  };
+
+  const handleDeleteTodo = () => {
+    deleteTodoMutation.mutate(todoData.id);
   };
 
   return (
@@ -119,7 +140,11 @@ const TodoItem = ({ todoData, startEditTodo }: TodoItemProps) => {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" className="bg-red-500 hover:bg-red-600">
+              <Button
+                size="icon"
+                className="bg-red-500 hover:bg-red-600"
+                onClick={handleDeleteTodo}
+              >
                 <Trash size={16} />
               </Button>
             </TooltipTrigger>

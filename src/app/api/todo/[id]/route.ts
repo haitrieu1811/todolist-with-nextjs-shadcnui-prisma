@@ -51,3 +51,16 @@ export async function PATCH(
   });
   return NextResponse.json({ data: { updatedTodo } });
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  const deletedTodo = await prisma.todo.delete({
+    where: {
+      id,
+    },
+  });
+  return NextResponse.json({ data: { deletedTodo } });
+}
