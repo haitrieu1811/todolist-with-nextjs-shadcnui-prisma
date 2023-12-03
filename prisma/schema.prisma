@@ -9,3 +9,18 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Todo {
+  id         String   @id @default(uuid())
+  title      String   @db.VarChar(255)
+  isFinished Boolean  @default(false)
+  level      Level    @default(NORMAL)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum Level {
+  DELIBERATELY
+  NORMAL
+  DEADLINE
+}
