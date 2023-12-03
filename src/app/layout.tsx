@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import TanstackProvider from "@/providers/tanstack-provider";
+import ThemeProvider from "@/providers/theme-provider";
 import "./globals.css";
 
 export const fontSans = FontSans({
@@ -29,15 +30,17 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <TanstackProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </TanstackProvider>
       </body>
     </html>
   );

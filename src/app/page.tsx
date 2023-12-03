@@ -1,6 +1,8 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ModeToggle } from "@/components/mode-toggle";
@@ -18,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { CreateTodoSchemaType } from "@/rules/todo.rules";
+import { GetTodosResponse } from "@/types/todo.types";
 
 export default function Home() {
   const { toast } = useToast();
@@ -29,6 +32,18 @@ export default function Home() {
     },
   });
 
+  const getTodosQuery = useQuery({
+    queryKey: ["get-todos"],
+    queryFn: () => axios.get<GetTodosResponse>("/api/todo"),
+  });
+
+  const todos = useMemo(
+    () => getTodosQuery.data?.data.data.todos ?? [],
+    [getTodosQuery.data?.data.data.todos]
+  );
+
+  console.log(todos);
+
   const onSubmit = handleSubmit(async (data) => {
     await axios.post("/api/todo", data);
     toast({
@@ -36,6 +51,7 @@ export default function Home() {
       description: "Công việc đã được thêm vào danh sách",
     });
     reset();
+    getTodosQuery.refetch();
   });
 
   return (
@@ -92,11 +108,9 @@ export default function Home() {
         </TabsList>
         <TabsContent value="all">
           <div className="space-y-4 py-6">
-            {Array(20)
-              .fill(0)
-              .map((_, index) => (
-                <TodoItem key={index} />
-              ))}
+            {todos.map((todo) => (
+              <TodoItem key={todo.id} todoData={todo} />
+            ))}
           </div>
         </TabsContent>
         <TabsContent value="unfinished">Chưa thực hiện.</TabsContent>

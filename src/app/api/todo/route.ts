@@ -18,3 +18,16 @@ export async function POST(req: NextRequest) {
     status: 201,
   });
 }
+
+export async function GET() {
+  const todos = await prisma.todo.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return NextResponse.json({
+    data: {
+      todos,
+    },
+  });
+}

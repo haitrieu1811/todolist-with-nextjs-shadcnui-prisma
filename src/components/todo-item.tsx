@@ -9,27 +9,34 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { TodoType } from "@/types/todo.types";
 
-type TodoItemProps = {
-  isFinished?: boolean;
+const todoBadges = {
+  DELIBERATELY: <Badge className="bg-blue-500">Thong thả</Badge>,
+  NORMAL: <Badge className="bg-yellow-500">Bình thường</Badge>,
+  DEADLINE: <Badge className="bg-red-500">Deadline</Badge>,
 };
 
-const TodoItem = ({ isFinished = true }: TodoItemProps) => {
+type TodoItemProps = {
+  todoData: TodoType;
+};
+
+const TodoItem = ({ todoData }: TodoItemProps) => {
   return (
     <div className="border border-border rounded-lg px-6 py-3 flex justify-between items-center">
       <div className="flex items-center">
-        <Badge className="bg-red-500">Deadline</Badge>
+        {todoBadges[todoData.level as keyof typeof todoBadges]}
         <span
           className={classNames("ml-4", {
-            "line-through text-muted-foreground": isFinished,
+            "line-through text-muted-foreground": todoData.isFinished,
           })}
         >
-          Học Prisma
+          {todoData.title}
         </span>
       </div>
       <TooltipProvider>
         <div className="flex space-x-2">
-          {isFinished && (
+          {todoData.isFinished && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -44,7 +51,7 @@ const TodoItem = ({ isFinished = true }: TodoItemProps) => {
               </TooltipContent>
             </Tooltip>
           )}
-          {!isFinished && (
+          {!todoData.isFinished && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="icon" className="bg-green-500 hover:bg-green-600">
