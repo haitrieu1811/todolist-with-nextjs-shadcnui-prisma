@@ -46,6 +46,16 @@ export default function Home() {
     [getTodosQuery.data?.data.data.todos]
   );
 
+  const finishedTodos = useMemo(
+    () => todos.filter((todo) => todo.isFinished),
+    [todos]
+  );
+
+  const unfinishedTodos = useMemo(
+    () => todos.filter((todo) => !todo.isFinished),
+    [todos]
+  );
+
   const getTodoQuery = useQuery({
     queryKey: ["get-todo", currentTodoId],
     queryFn: () => axios.get<GetTodoResponse>(`/api/todo/${currentTodoId}`),
@@ -198,8 +208,24 @@ export default function Home() {
             ))}
           </div>
         </TabsContent>
-        <TabsContent value="unfinished">Chưa thực hiện.</TabsContent>
-        <TabsContent value="finished">Đã thực hiện.</TabsContent>
+        <TabsContent value="unfinished">
+          {unfinishedTodos.map((todo) => (
+            <TodoItem
+              key={todo.id}
+              todoData={todo}
+              startEditTodo={startEditTodo}
+            />
+          ))}
+        </TabsContent>
+        <TabsContent value="finished">
+          {finishedTodos.map((todo) => (
+            <TodoItem
+              key={todo.id}
+              todoData={todo}
+              startEditTodo={startEditTodo}
+            />
+          ))}
+        </TabsContent>
       </Tabs>
     </main>
   );
