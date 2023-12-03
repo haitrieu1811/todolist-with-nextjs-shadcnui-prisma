@@ -12,3 +12,7 @@ export type TodoType = {
 export type GetTodosResponse = SuccessResponse<{
   todos: TodoType[];
 }>;
+
+export type GetTodoResponse = SuccessResponse<{
+  todo: TodoType;
+}>;

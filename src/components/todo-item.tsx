@@ -19,9 +19,10 @@ const todoBadges = {
 
 type TodoItemProps = {
   todoData: TodoType;
+  startEditTodo: (todoId: string) => void;
 };
 
-const TodoItem = ({ todoData }: TodoItemProps) => {
+const TodoItem = ({ todoData, startEditTodo }: TodoItemProps) => {
   return (
     <div className="border border-border rounded-lg px-6 py-3 flex justify-between items-center">
       <div className="flex items-center">
@@ -63,7 +64,11 @@ const TodoItem = ({ todoData }: TodoItemProps) => {
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" className="bg-blue-500 hover:bg-blue-600">
+              <Button
+                size="icon"
+                className="bg-blue-500 hover:bg-blue-600"
+                onClick={() => startEditTodo(todoData.id)}
+              >
                 <Pencil size={16} />
               </Button>
             </TooltipTrigger>

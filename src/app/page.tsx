@@ -1,8 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useMemo } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ModeToggle } from "@/components/mode-toggle";
@@ -20,17 +21,20 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { CreateTodoSchemaType } from "@/rules/todo.rules";
-import { GetTodosResponse } from "@/types/todo.types";
+import { GetTodoResponse, GetTodosResponse } from "@/types/todo.types";
 
 export default function Home() {
   const { toast } = useToast();
 
-  const { control, handleSubmit, reset } = useForm<CreateTodoSchemaType>({
-    defaultValues: {
-      title: "",
-      level: "NORMAL",
-    },
-  });
+  const [currentTodoId, setCurrentTodoId] = useState<string | null>(null);
+
+  const { control, handleSubmit, reset, setValue } =
+    useForm<CreateTodoSchemaType>({
+      defaultValues: {
+        title: "",
+        level: "NORMAL",
+      },
+    });
 
   const getTodosQuery = useQuery({
     queryKey: ["get-todos"],
@@ -42,16 +46,77 @@ export default function Home() {
     [getTodosQuery.data?.data.data.todos]
   );
 
-  console.log(todos);
+  const getTodoQuery = useQuery({
+    queryKey: ["get-todo", currentTodoId],
+    queryFn: () => axios.get<GetTodoResponse>(`/api/todo/${currentTodoId}`),
+    enabled: !!currentTodoId,
+  });
+
+  const currentTodo = useMemo(
+    () => getTodoQuery.data?.data.data.todo,
+    [getTodoQuery.data?.data.data.todo]
+  );
+
+  useEffect(() => {
+    if (!currentTodo) {
+      setValue("title", "");
+      setValue("level", "NORMAL");
+      return;
+    }
+    setValue("title", currentTodo.title);
+    setValue(
+      "level",
+      currentTodo.level as "DELIBERATELY" | "NORMAL" | "DEADLINE"
+    );
+  }, [currentTodo, setValue]);
+
+  const startEditTodo = (todoId: string) => {
+    setCurrentTodoId(todoId);
+  };
+
+  const stopEditTodo = () => {
+    setCurrentTodoId(null);
+  };
+
+  const createTodoMutation = useMutation({
+    mutationKey: ["create-todo"],
+    mutationFn: (data: {
+      title: string;
+      level: "DELIBERATELY" | "NORMAL" | "DEADLINE";
+    }) => axios.post("/api/todo", data),
+    onSuccess: () => {
+      toast({
+        title: "Thêm công việc thành công",
+        description: "Công việc đã được thêm vào danh sách",
+      });
+      reset();
+      getTodosQuery.refetch();
+    },
+  });
+
+  const updateTodoMutation = useMutation({
+    mutationKey: ["update-todo"],
+    mutationFn: (data: {
+      title: string;
+      level: "DELIBERATELY" | "NORMAL" | "DEADLINE";
+    }) => axios.patch(`/api/todo/${currentTodoId}`, data),
+    onSuccess: () => {
+      toast({
+        title: "Cập nhật công việc thành công",
+        description: "Công việc đã được cập nhật vào danh sách",
+      });
+      reset();
+      getTodosQuery.refetch();
+      stopEditTodo();
+    },
+  });
 
   const onSubmit = handleSubmit(async (data) => {
-    await axios.post("/api/todo", data);
-    toast({
-      title: "Thêm công việc thành công",
-      description: "Công việc đã được thêm vào danh sách",
-    });
-    reset();
-    getTodosQuery.refetch();
+    if (!currentTodoId) {
+      createTodoMutation.mutate(data);
+    } else {
+      updateTodoMutation.mutate(data);
+    }
   });
 
   return (
@@ -78,7 +143,11 @@ export default function Home() {
           control={control}
           name="level"
           render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+              value={field.value}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn mức độ công việc" />
               </SelectTrigger>
@@ -98,7 +167,19 @@ export default function Home() {
             </Select>
           )}
         />
-        <Button type="submit">Thêm công việc</Button>
+        <div className="flex space-x-2">
+          <Button type="submit">
+            {(createTodoMutation.isPending || updateTodoMutation.isPending) && (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            )}
+            {currentTodoId ? "Cập nhật" : "Thêm"}
+          </Button>
+          {currentTodoId && (
+            <Button type="button" variant="destructive" onClick={stopEditTodo}>
+              Hủy
+            </Button>
+          )}
+        </div>
       </form>
       <Tabs defaultValue="all" className="mt-6">
         <TabsList>
@@ -109,7 +190,11 @@ export default function Home() {
         <TabsContent value="all">
           <div className="space-y-4 py-6">
             {todos.map((todo) => (
-              <TodoItem key={todo.id} todoData={todo} />
+              <TodoItem
+                key={todo.id}
+                todoData={todo}
+                startEditTodo={startEditTodo}
+              />
             ))}
           </div>
         </TabsContent>
